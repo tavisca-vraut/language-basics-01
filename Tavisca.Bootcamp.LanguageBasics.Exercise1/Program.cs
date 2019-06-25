@@ -21,71 +21,52 @@ namespace Tavisca.Bootcamp.LanguageBasics.Exercise1
         }
 
         public static int FindDigit(string equation)
-        {
-            var str = equation.Split("=");
-            var c = str[1];
-            str = str[0].Split('*');
-            var a = str[0];
-            var b = str[1];
+        {   
 
-            var res = "";
-            if (c.IndexOf('?') != -1) {
-                res = (int.Parse(a) * int.Parse(b)).ToString();
+            // Assume equation to be in: 'a*b=c' format
+            string a, b, c;
+            GetABC(equation, out a, out b, out c);
 
-                if (res.Length != c.Length) return -1;
+            if (c.IndexOf('?') != -1) return FindValueOfQuestionMarkFromActual(
+                (int.Parse(a) * int.Parse(b)).ToString(),
+                c);
+            else if (a.IndexOf('?') != -1) return MissingDigitInAOrB(a, b, c);
+            else if (b.IndexOf('?') != -1) return MissingDigitInAOrB(b, a, c);
+            else return -1;
+        }
 
-                var temp_c = "";
-                int returnDig = 0;
-                foreach (var ch in c) {
-                    if (ch == '?') {
-                        temp_c += res[c.IndexOf(ch)];
-                        returnDig = int.Parse(res[c.IndexOf(ch)].ToString());
-                    } else {
-                        temp_c += ch;
-                    }
-                }
+        public static void GetABC(string equation, out string a, out string b, out string c) {
+            // Separate LHS and RHS
+            var temp = equation.Split("=");
 
-                if (res != temp_c) return -1;
-                return returnDig;
-            } else if (a.IndexOf('?') != -1) {
-                if (int.Parse(c) % int.Parse(b) != 0) return -1;
-                res = (int.Parse(c) / int.Parse(b)).ToString();
+            // separating a, b, c
+            c = temp[1];
+            temp = temp[0].Split('*');
+            a = temp[0];
+            b = temp[1];
+        }
 
-                if (res.Length != a.Length) return -1;
+        public static int MissingDigitInAOrB(string lhsToFind, string lhsGiven, string c) {
+            if (int.Parse(c) % int.Parse(lhsGiven) != 0) return -1;
 
-                var temp_a = "";
-                int returnDig = 0;
-                foreach (var ch in a) {
-                    if (ch == '?') {
-                        temp_a += res[a.IndexOf(ch)];
-                        returnDig = int.Parse(res[a.IndexOf(ch)].ToString());
-                    } else {
-                        temp_a += ch;
-                    }
-                }
+            string actualValue = (int.Parse(c) / int.Parse(lhsGiven)).ToString();
+            return FindValueOfQuestionMarkFromActual(actualValue, lhsToFind);
+        }
 
-                if (res != temp_a) return -1;
-                return returnDig;
-            } else if (b.IndexOf('?') != -1) {
-                if (int.Parse(c) % int.Parse(a) != 0) return -1;
-                res = (int.Parse(c) / int.Parse(a)).ToString();
+        ///<summary>
+        /// param: actual ->  string that has digit, that we will use to replace the question mark
+        /// param: hasQuestionMark -> string that has Question mark
+        ///</summary>
+        public static int FindValueOfQuestionMarkFromActual(string actual, string hasQuestionMark) {
+            if (actual.Length != hasQuestionMark.Length) return -1;
 
-                if (res.Length != b.Length) return -1;
+            #region FillQuestionMarkInRHSWithCorrespondingDigitInLHS
+                int indexOfQuestionMark = hasQuestionMark.IndexOf('?');
+                string temp = hasQuestionMark.Replace('?', actual[indexOfQuestionMark]);
+            #endregion
 
-                var temp_b = "";
-                int returnDig = 0;
-                foreach (var ch in b) {
-                    if (ch == '?') {
-                        temp_b += res[b.IndexOf(ch)];
-                        returnDig = int.Parse(res[b.IndexOf(ch)].ToString());
-                    } else {
-                        temp_b += ch;
-                    }
-                }
-
-                if (res != temp_b) return -1;
-                return returnDig;
-            } else return -1;
+            if (actual != temp) return -1;
+            return int.Parse(actual[indexOfQuestionMark].ToString());   
         }
     }
 }
